@@ -24,7 +24,7 @@ int main(void) {
 	int tower_pos = -1;               //캣 타워 위치          [게임 시작 시 설치되지 않은 상태이므로 -1 초기화를 하는 것!
 	int scratcher = 0, tower = 0; //해당 놀이기구를 샀는지 여부 (0 or 1)
 	int kicked_off_shoes = 0; //집에 막 도착했는지 표시해주는 코드 (0: 도착 X, 1: 이번 턴에 막 도착)
-	//상태를 표현하기 위한 목적은“플래그 변수" 라고 부른답니다.. 
+	//상태를 표현하기 위한 목적은“플래그 변수" 라고 부름.
 
 	printf("당신이 지은 야옹이 이름을 다시 한 번 입력하세요: ");  //%c는 문자열을 하나만 다룰 때 사용하고
 	scanf_s("%s", name, 100);                 //%s 는 여러 글자 문자열을 입출력 할 때 사용.  계속해서 한자로 오류난 이유가 %c로 돼 있어서 그랬음 
@@ -102,7 +102,7 @@ int main(void) {
 				}
 			}
 		}
-		
+
 		//기분이 1 일 때 더 가까운 놀이기구 쪽으로 이동
 		else if (feel == 1) {
 			if (scratcher && zzontteok_pos != scratcher_pos) {
@@ -160,7 +160,7 @@ int main(void) {
 		else if (zzontteok_pos == scratcher_pos && scratcher) {
 			if (feel < 3) {
 				printf("%s은(는) 스크래처를 긁고 놀았습니다.\n", name);
-				printf("기분이 조금 좋아졌습니다: %d -> %d\n", feel, feel + 1);
+				printf("기분이 조금 좋아졌습니다: %d -> %d\n", feel, feel + 1);    //스크래처는 3을 넘을 일이 없으니까 feel 에 +1 만 해줘도 됨
 				feel++;           //집에서 한 턴을 쉴 때마다 기분 + 1
 			}
 		}
@@ -171,10 +171,99 @@ int main(void) {
 				if (feel > 3) feel = 3;
 				printf("%s은(는) 캣타워를 뛰어다닙니다.\n", name);
 				printf("기분이 제법 좋아졌습니다: %d -> %d\n", before, feel);
+				//스크래처와는 다르게 캣타워는 기분이 2일 때 feel += 2 → 4가 되는데 
+				//하지만 기분은 최대 3까지니까 feel = 3; 으로 아에 못 박은 것 
+				//그리고 스크래처처럼 feel + 2 를 하면 최대 3까진데 4가 나와버림 그러면 feel = 3으로 만들어야하고 이렇게 출력하면 
+				//실제로는 2->3인데 3->5라고 나와버림. (feel값이 바뀌어버리기때문에 feel + 2는 원래 값에 + 2가 안되기 때문에??)
+				//before라는 변수를 만들어서 바뀌기 전 값을 저장해서 기분을 +2 하면 feel은 알아서 최대값을 3으로 해주게 됨
 			}
 		}
 		Sleep(1500);
 		system("cls");
+
+		//방 그리기 
+
+		printf("\n[ %s(이)가 보면 울부짖을 정도의 방 . . . ]\n", name);
+		for (int i = 0; i < ROOM_WIDTH + 2; i++) printf("#");
+		printf("\n#");
+		for (int i = 0; i < ROOM_WIDTH; i++) {
+			if (i == HME_POS) printf("H");
+			else if (i == tower_pos && tower) printf("T");
+			else if (i == scratcher_pos && scratcher) printf("S");
+			else if (i == BWL_POS) printf("B");
+			else printf(" ");
+		}
+		printf("#\n#");
+		for (int i = 0; i < ROOM_WIDTH; i++) {
+			if (i == zzontteok_pos) printf("C");
+			else if (i == zzontteok_prev_pos) printf(".");
+			else printf(" ");
+		}
+		printf("#\n");
+		for (int i = 0; i < ROOM_WIDTH + 2; i++) printf("#");
+		printf("\n\n");
+
+		Sleep(1500);
+		system("cls");
+
+		int mouse = 1;
+		int laser = 1;
+		int toy_choice = 1; //무조건적을 필요한 변수! 
+		//장난감이 없을 때 toy_choice 값이 1 : 이 얘기는 선택 가능한 게 0, 1
+		//그럼 장난감이 하나 일 때는 toy_choice 값이 2 : 이 얘기는 선택 가능한 게 0, 1, 2
+		//장난감이 둘 다 있을 때는 toy_choice 값이 3 : 이 얘기는 선택 가능한 게 0, 1, 2, 3
+
+		//상호작용 입력
+		//장난감이 없을 경우
+		printf("\n어떤 상호작용을 하시겠습니까?\n");
+		printf("0. 아무것도 하지 않음\n");
+		printf("1. 긁어 주기\n");
+
+		//장난감이 2개 다 있을 경우
+		if (mouse && laser) {
+			printf("2. 장난감 쥐로 놀아 주기\n");
+			printf("3. 레이저 포인터로 놀아 주기\n");
+			toy_choice = 3;
+		}
+		else if (mouse) {
+			printf("2. 장난감 쥐로 놀아 주기\n");    //쥐만 있는 경우
+			toy_choice = 2;  
+		}
+		else if (laser) {
+			printf("2. 레이저 포인터로 놀아 주기\n");  //레이저만 있는 경우
+			toy_choice = 2;
+		}
+
+	//범위 안의 숫자가 나올 때까지 다시 입력하기 위한 do while 문
+		do {
+			printf(">> ");
+			scanf_s("%d", &interaction);
+			if (interaction < 0 || interaction > toy_choice) {
+				printf("잘못된 번호입니다. 다시 입력하세요.\n");
+			}
+		} while (interaction < 0 || interaction > toy_choice);
+
+		//선택 출력만! (효과는 다음 단계에서)
+		switch (interaction) {
+		case 0:
+			printf("아무것도 하지 않았습니다.\n");
+			break;
+		case 1:
+			printf("야옹이를 긁어 주었습니다.\n");
+			break;
+		case 2:
+			if (mouse && laser) {
+				printf("장난감 쥐와 레이저 포인터 중 하나를 선택하세요.\n");
+			}
+			else if (mouse) {
+				printf("장난감 쥐로 야옹이와 놀아 주었습니다.\n");
+			}
+			else if (laser) {
+				printf("레이저 포인터로 야옹이와 놀아 주었습니다.\n");
+			} break;
+		case 3:
+			printf("레이저 포인터로 야옹이와 놀아 주었습니다.\n");
+		} break;
 	}
 	return 0;
 }
