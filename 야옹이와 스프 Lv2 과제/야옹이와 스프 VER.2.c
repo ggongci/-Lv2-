@@ -227,14 +227,14 @@ int main(void) {
 		}
 		else if (mouse) {
 			printf("2. 장난감 쥐로 놀아 주기\n");    //쥐만 있는 경우
-			toy_choice = 2;  
+			toy_choice = 2;
 		}
 		else if (laser) {
 			printf("2. 레이저 포인터로 놀아 주기\n");  //레이저만 있는 경우
 			toy_choice = 2;
 		}
 
-	//범위 안의 숫자가 나올 때까지 다시 입력하기 위한 do while 문
+		//범위 안의 숫자가 나올 때까지 다시 입력하기 위한 do while 문
 		do {
 			printf(">> ");
 			scanf_s("%d", &interaction);
@@ -243,7 +243,7 @@ int main(void) {
 			}
 		} while (interaction < 0 || interaction > toy_choice);
 
-		//선택 출력만! (효과는 다음 단계에서)
+		//선택 출력만! (효과는 다음 단계에서) 
 		switch (interaction) {
 		case 0:
 			printf("아무것도 하지 않았습니다.\n");
@@ -259,11 +259,81 @@ int main(void) {
 				printf("장난감 쥐로 야옹이와 놀아 주었습니다.\n");
 			}
 			else if (laser) {
-				printf("레이저 포인터로 야옹이와 놀아 주었습니다.\n");
-			} break;
+				printf("레이저 포인터로 야옹이와 놀아 주었습니다.\n"); break;
+			}
 		case 3:
-			printf("레이저 포인터로 야옹이와 놀아 주었습니다.\n");
-		} break;
+			printf("레이저 포인터로 야옹이와 놀아 주었습니다.\n"); break;
+		}
+
+		//상호작용 처리에서 주사위가 몇 이상일 때 이하일 때의 코드들도 존재해야함.. 이 부분을 놓쳤으면 큰일날뻔
+		dice = rand() % 6 + 1;
+		//2-6 상호작용 처리
+		switch (interaction) {
+		case 0: // 아무것도 하지 않았을 때 
+			if (feel > 0) {  //기분이 0 미만으로 내려가지 않게 하기 위해 feel > 0 으로 둠
+				printf("%s의 기분이 나빠졌습니다: %d -> %d\n", name, feel, feel - 1);
+				feel--;
+			}
+			else {
+				printf("%s의 기분은 이미 최악입니다. 당장 놀아주지 않으면 할퀴기 공격이 들어올 수도 있습니다.\n", name);
+			}
+			if (dice <= 5 && intimacy > 0) {   //이 부분도 위 부분과 같이 친밀도가 음수가 되지 않게 하기 위해!
+				printf("주사위: %d → 집사와의 관계가 나빠집니다: %d -> %d\n", dice, intimacy, intimacy - 1);
+				intimacy--;
+			}
+			else {
+				printf("주사위: %d → 관계는 그대로입니다.\n", dice);
+			}
+			break;
+
+		case 1: // 긁어주기
+			printf("%s의 기분은 그대로입니다: %d\n", name, feel);
+			if (dice >= 5) {   //주사위가 5 이상이면 +1 이니까 
+				printf("주사위: %d → 집사와의 관계가 좋아집니다: %d -> %d\n", dice, intimacy, intimacy + 1);
+				intimacy++;
+			}
+			else {        //주사위가 5 이하 일 때는 그대로 가버리는것
+				printf("주사위: %d → 관계는 그대로입니다.\n", dice);
+			}
+			break;
+
+		case 2: // 장난감 쥐
+			if (feel < 3) {    //기분은 3보다 클 수 없으므로 위 코드들과 같이 3 초과를 막기 위해 
+				printf("장난감 쥐로 %s와 놀아주었습니다. %s의 기분이 쬐끔 좋아졌습니다: %d -> %d\n", name, name, feel, feel + 1);
+				feel++;
+			}
+			else {
+				printf("기분은 이미 최고입니다.\n");
+			}
+			if (dice >= 4) {        //이번엔 주사위가 4 이상 일 때 
+				printf("주사위: %d → 집사와의 관계가 좋아집니다: %d -> %d\n", dice, intimacy, intimacy + 1);
+				intimacy++;
+			}
+			else {
+				printf("주사위: %d → 관계는 그대로입니다.\n", dice);
+			}
+			break;
+
+		case 3: // 레이저 포인터
+			if (feel < 3) {
+				int before = feel;  //before 변수를 사용한 이유는 행동 코드때와 같음. 
+				//feel 값이 바뀌어도 나중에 값을 저장했으니까 기억이 가능 안전함.
+				feel += 2;
+				if (feel > 3) feel = 3;    //위에 말 했을 최대 기분은 3 이니까 feel = 3 을 넣어서 제한 시켜버리기
+				printf("레이저 포인터로 %s와 신나게 놀아주었습니다. %s의 기분이 꽤 좋아졌습니다: %d -> %d\n", name, name, before, feel);
+			}
+			else {
+				printf("기분은 이미 최고입니다.\n");
+			}
+			if (dice >= 2) {
+				printf("주사위: %d → 집사와의 관계가 더욱 돈독해집니다: %d -> %d\n", dice, intimacy, intimacy + 1);
+				intimacy++;
+			}
+			else {
+				printf("주사위: %d → 관계는 그대로입니다.\n", dice);
+			}
+			break;
+		}
 	}
 	return 0;
 }
