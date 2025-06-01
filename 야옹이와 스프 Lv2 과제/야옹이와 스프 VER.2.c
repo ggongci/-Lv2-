@@ -176,13 +176,7 @@ int main(void) {
 				feel++;           //집에서 한 턴을 쉴 때마다 기분 + 1
 			}
 		}
-		else if (zzontteok_pos == tower_pos && tower) { 		int cp_get = feel + intimacy; //CP 계산식: 기분 + 친밀도
-		cp += cp_get; //현재 턴에 얻은 CP를 누적
-
-		printf("\n%s의 기분(0~3): %d\n", name, feel);
-		printf("집사와의 친밀도(0~4): %d\n", intimacy);
-		printf("%s의 기분과 친밀도에 따라서 CP가 %d 포인트 생산되었습니다.\n", name, cp_get);
-		printf("보유 CP: %d 포인트\n", cp);
+		else if (zzontteok_pos == tower_pos && tower) {
 			if (feel < 3) {
 				int before = feel;
 				feel += 2;
