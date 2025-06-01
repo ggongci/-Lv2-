@@ -147,7 +147,19 @@ int main(void) {
 				printf("%s이(가) 브로콜리 수프를 만들었습니다!\n", name);
 
 			}
-			madesoup++;          //씀으로써 몇 개를 만들었는지 확인할 수있게 해주는 코드.
+			madesoup++;     //씀으로써 몇 개를 만들었는지 확인할 수있게 해주는 코드.
+
+
+			//일단 흐름상... 수프를 만든 직후에 CP가 생성되는 게 좋을 거 같아서 넣음. 
+			//기분이 좋으면 수프를 만들러 가니까 수프를 만들면 CP 포인트를 생성 
+			//cute point 보다는 cooking point 느낌. . . . .  ^^7 
+			int cp_get = feel + intimacy; //CP 계산식: 기분 + 친밀도
+			cp += cp_get; //현재 턴에 얻은 CP를 누적
+
+			printf("\n%s의 기분(0~3): %d\n", name, feel);
+			printf("집사와의 친밀도(0~4): %d\n", intimacy);
+			printf("%s의 기분과 친밀도에 따라서 CP가 %d 포인트 생산되었습니다.\n", name, cp_get);
+			printf("보유 CP: %d 포인트\n", cp);
 		}
 		//위 코드를 배열로 간단히 변경할 수도 있음! 하지만 스스로 아래와 같은 배열을 사용하기엔 부족함을 느낌.
 		/*	if (zzontteok_pos == BWL_POS) {
@@ -164,7 +176,13 @@ int main(void) {
 				feel++;           //집에서 한 턴을 쉴 때마다 기분 + 1
 			}
 		}
-		else if (zzontteok_pos == tower_pos && tower) {
+		else if (zzontteok_pos == tower_pos && tower) { 		int cp_get = feel + intimacy; //CP 계산식: 기분 + 친밀도
+		cp += cp_get; //현재 턴에 얻은 CP를 누적
+
+		printf("\n%s의 기분(0~3): %d\n", name, feel);
+		printf("집사와의 친밀도(0~4): %d\n", intimacy);
+		printf("%s의 기분과 친밀도에 따라서 CP가 %d 포인트 생산되었습니다.\n", name, cp_get);
+		printf("보유 CP: %d 포인트\n", cp);
 			if (feel < 3) {
 				int before = feel;
 				feel += 2;
