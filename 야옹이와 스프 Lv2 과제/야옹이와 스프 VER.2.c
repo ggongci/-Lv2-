@@ -27,6 +27,19 @@ int main(void) {
 	//상태를 표현하기 위한 목적은“플래그 변수" 라고 부름.
 	int mouse = 0;
 	int laser = 0;
+	int close = -1;  //현재 위치에서 더 가까운 쪽 놀이기구를 골라서 이동하기 위해 그 위치를 target 변수에 저장
+
+	printf("**** 쫀득이와 수프 레벨 투 ****\n");
+
+	printf("              ／＞　 フ\n");
+	printf("              |  _　_ | \n");
+	printf("           ／ ミ＿xノ \n");
+	printf("          /　　　　 |\n");
+	printf("         /　 ＼　　 /\n");
+	printf("        │　　|　|　|\n");
+	printf("  ／￣  |　　 |　|　|\n");
+	printf("      (￣＼＿_＼_)__)       (츄르)\n");
+	printf("  ＼二)       \n");
 
 	printf("당신이 지은 야옹이 이름을 다시 한 번 입력하세요: ");  //%c는 문자열을 하나만 다룰 때 사용하고
 	scanf_s("%s", name, 100);                 //%s 는 여러 글자 문자열을 입출력 할 때 사용.  계속해서 한자로 오류난 이유가 %c로 돼 있어서 그랬음 
@@ -85,16 +98,19 @@ int main(void) {
 		//이동 & 행동 
 		// 이동
 		//기분이 0 일 때 집쪽으로이동
-		zzontteok_prev_pos = zzontteok_pos;
+		zzontteok_prev_pos = zzontteok_pos;  //이전 위치를 저장
+
 		if (feel == 0) {
-			if (zzontteok_pos != HME_POS) {
+			if (zzontteok_pos > HME_POS) {
+				zzontteok_pos--;
 				printf("기분이 매우 나쁜 %s은(는) 집으로 향합니다.\n", name);
-				zzontteok_pos = HME_POS;    //이 코드가 집으로 이동하게 하는 코드!
-				kicked_off_shoes = 1;
+				printf("기분은 나쁘지만 다리가 짧아서 한 칸 밖에 이동하지 못합니다.\n");
+
+				if (zzontteok_pos == HME_POS) kicked_off_shoes = 1;
 			}  //현재 위 코드는 집에 막 도착한 턴에도 바로 기분 + 1 을 하는 문제점이 있음. //! 플래그 ! 변수 하나를 추가해서 해결했음
 			else {
 				printf("%s은(는) 집에서 쉼니다.\n", name);
-				if (kicked_off_shoes == 1) {
+				if (kicked_off_shoes) {
 					printf("%s은(는) 이번 턴에 막 집에 도착했습니다. 아직 쉬지 않습니다.\n", name);
 					kicked_off_shoes = 0; // 다음 턴부터는 쉴 수 있도록 플래그 변수 초기화
 				}
@@ -105,34 +121,41 @@ int main(void) {
 			}
 		}
 
-		//기분이 1 일 때 더 가까운 놀이기구 쪽으로 이동
+		//기분이 1 일 때 더 가까운 놀이기구 쪽으로 이동, 놀이기구가 없으면 기분 -1
 		else if (feel == 1) {
-			if (scratcher && zzontteok_pos != scratcher_pos) {
-				printf("%s은(는) 심심해서 스크래처 쪽으로 이동합니다.\n", name);
-				zzontteok_pos = scratcher_pos;          //이 코드가 스크래처로 이동하게 하는 코드!
-			}
-			else if (tower && zzontteok_pos != tower_pos) {
-				printf("%s은(는) 심심해서 캣타워 쪽으로 이동합니다\n", name);
-				zzontteok_pos = tower_pos;             //이 코드가 타워로 이동하게 하는 코드!
+			if (scratcher || tower) {
+				close = -1;
+				if (scratcher && (!tower || abs(zzontteok_pos - scratcher_pos) <= abs(zzontteok_pos - tower_pos)))
+					close = scratcher_pos;
+				else {
+					close = tower_pos;
+				}
+				if (zzontteok_prev_pos < close) zzontteok_pos++;
+				else if (zzontteok_pos > close) zzontteok_pos--;
+
+
+				printf("%s은(는) 심심해서 %s 쪽으로 한 칸 이동합니다.\n", name,
+					close == scratcher_pos ? "스크래처" : "캣타워");
 			}
 			else {
-				printf("놀 거리가 없어서 %s의 기분이 매우 나빠집니다.\n", name);
-				if (feel > 0) feel--;                //스크래처 또는 캣타워가 있으면 그 쪽으로 이동. 없으면 기분-1!
+				printf("놀거리가 없어서 %s의 기분이 매우 나빠집니다.\n", name);
+				if (feel > 0) feel--;
 			}
 		}
 		//기분이 2 일 때 제자리에 대기
 		else if (feel == 2) {
 			printf("%s은(는) 기분 좋게 식빵을 굽고 있습니다.\n", name);
-			// 이동하지 않고 대기 상태. 텍스트만 출력되고 이동 없음
 		}
 		//기분 3 일 때 냄비쪽으로 이동
 		else if (feel == 3) {
-			if (zzontteok_pos != BWL_POS) {
-				printf("%s은(는) 골골송을 부르며 수프를 만들러 갑니다.\n", name);
-				zzontteok_pos = BWL_POS;            //이 코드가 냄비로 이동하게 하는 코드!
-				//냄비 쪽으로 무조건 이동 → 도착 시 수프 만들기 가능
-			}
+			if (zzontteok_pos < BWL_POS) {
+				zzontteok_pos++;
+			printf("%s은(는) 골골송을 부르며 수프를 만들러 한 칸 이동합니데이.\n", name);
 		}
+		else {
+			printf("%s은(는) 수프를 만들 준비가 되어 있습니다~!\n", name);
+		}
+	}		//냄비 쪽으로 무조건 이동 → 도착 시 수프 만들기 가능
 
 		//행동
 		//아래 코드는 야옹이 Lv1에서 사용한 코드
@@ -355,9 +378,19 @@ int main(void) {
 			break;
 		}
 
+		// 2-7 CP 생산
+		int cp_gain = (feel - 1 >= 0 ? feel - 1 : 0) + intimacy;
+		cp += cp_gain;
+
+		printf("\n%s의 기분(0~3): %d\n", name, feel);
+		printf("집사와의 친밀도(0~4): %d\n", intimacy);
+		printf("%s의 기분과 친밀도에 따라서 CP가 %d 포인트 생산되었습니다.\n", name, cp_gain);
+		printf("보유 CP: %d 포인트\n", cp);
+
+
 		int shop_flex = -1; //사용자가 상점에서 선택한 번호를 저장할 변수 (-1 로 저장해서 초기값은 아무것도 안 골랐다는 뜻)
 
-		printf("\n[ 고양이 상점 🐾 ]\n");
+		printf("\n[ 고양이 상점 ]\n");
 		printf("\n고양이 상점에서 물건을 살 수 있습니다.\n");
 		printf("어떤 물건을 구매할까요?\n");
 		printf("0. 아무 것도 사지 않는다.\n");  //0번은 그냥 지나가는 선택지로.
