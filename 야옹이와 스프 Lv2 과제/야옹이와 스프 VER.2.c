@@ -28,6 +28,13 @@ int main(void) {
 	int mouse = 0;
 	int laser = 0;
 	int close = -1;  //현재 위치에서 더 가까운 쪽 놀이기구를 골라서 이동하기 위해 그 위치를 target 변수에 저장
+	int feel_so_bad_or_good = 6 - intimacy;
+	//미니게임을 위한 변수
+	int turn_count = 1;
+	int number = 1;       //지금 부를 숫자 1~30까지
+	int pnp = 1;  //(pass no pass) 패논패  
+	int 십의자리 = number / 10;
+	int 일의자리 = number % 10;
 
 	printf("**** 쫀득이와 수프 레벨 투 ****\n");
 
@@ -45,7 +52,7 @@ int main(void) {
 	scanf_s("%s", name, 100);                 //%s 는 여러 글자 문자열을 입출력 할 때 사용.  계속해서 한자로 오류난 이유가 %c로 돼 있어서 그랬음 
 	printf("정답입니다. 당신의 야옹이의 이름은 %s입니다.\n", name);
 
-	Sleep(1000);
+	Sleep(500);
 	system("cls");  //화면을 지움
 
 	//2-1상태창 변경 - CP , 기분 출력
@@ -73,23 +80,127 @@ int main(void) {
 		}
 		printf("==================================================\n\n");
 
+		Sleep(500);
 
+		// 돌발 퀘스트: 3,6,9 게임 (3턴마다 실행)
+		if (turn_count % 3 == 0) {
+			char input[10];  //"짝" 을 입력해야하니까 사용자가 입력한 문자열을 저장할 배열! 
+			number = 1;
+			pnp = 1;
+			printf("\n[돌발 퀘스트 발생!] %s과(와) 함께 3,6,9 게임을 시작합니다!\n", name);
+			printf("규칙: 3, 6, 9가 들어간 숫자에는 '짝'이라고 입력하세요!\n");
+			printf("30까지 성공하면 돌발 퀘스트는 성공입니다!\n");
+			printf("성공의 보상은 %s(이)의 꾹꾹이 입니다.", name);
+			Sleep(1000);
+
+			while (number <= 30) {   //30까지니까 <= 30
+				if (number % 2 == 1) {      //홀수 차례 = 고양이 라는 의미 
+					if (number % 3 == 0 || number % 10 == 3 || number % 10 == 6 || number % 10 == 9)
+						// %3 == 0 : 3의 배수인지 // %10 == 3/6/9 : 끝자리가 3, 6 ,9인지 
+						// 이 조건 중에 하나라도 맞으면 "짝" 출력, 아니면 숫자 출력!	
+						printf("고양이: 짝\n");
+					else
+						printf("고양이: %d\n", number);
+					Sleep(500);
+				}
+				else {
+					printf("당신의 차례! >> ");
+					scanf_s("%s", input, 10);
+					//int need_clap 은 "짝" 을 외쳐야하는 숫자인지 저장하는 변수
+					십의자리 = number / 10;
+					일의자리 = number % 10;
+
+					int need_clap = (십의자리 == 3 || 십의자리 == 6 || 십의자리 == 9 ||
+						일의자리 == 3 || 일의자리 == 6 || 일의자리 == 9);
+
+					if (need_clap) {
+						//"짝"이 아닌 경우 직접 비교하는 코드
+
+						//아래와 같은 코드로 돌발 퀘스트를하려고 했지만 한글 한 글자는 2바이트 이상이여서 1바이트만 처리하는 char 는 오류가 발생할 수 밖에 없습니다.
+						//그로인해 strcmp 라는 함수를 사용해서 이 부분을 해결하고자 합니다. 
+						//strcmp는 두개의 문자열이 같은지, 다른지 다르면 어떤식으로 다른지 검사할 수 있는 strcmp 함수입니다. 
+						//현재 코드에서 사용하는 최적화된 코드
+					//	if (input[0] != '짝' || input[1] != '\0') {   //input[0] 은 사용자가 입력한 첫번째 글자임 
+						if (strcmp(input, "짝") != 0) {
+							//짝은 고양이와 약속한 단어 //'\0' 이건 문자열의 끝을 의미하는 특수 문자 
+									//3 6 9 게임을 만들기 위해 찾아보면서 알게 됨
+									//위 조건은 입력한 값이 "짝" 한 글자가 아니면 틀림다는 걸 의미함 
+							printf("틀렸습니다! 숫자 %d에서는 '짝'이라고 했어야 합니다!\n", number);
+							printf("집사 자격 감점 1점!");
+							pnp = 0;
+							break;
+						}
+					}
+					else {
+						if (number < 10) {
+							if (!(input[0] == number + '0' && input[1] == '\0')) {
+								//이건 숫자 한 자리일 때
+								printf("아이고.. 이걸 틀려..? 숫자 %d을 정확히 입력해야 했어요!\n", number);
+								Sleep(400);
+								printf("\n이거마저 해내지못하면 당신은 집사 탈락이야.");
+								Sleep(200);
+								printf("\n. . . \n조만간 기회를 다시 줄테니 연습하도록");
+								pnp = 0;
+								break;
+							}
+						}
+						else {
+							if (number > 10) {
+								if (!(input[0] == number / 10 + '0' && input[1] == number % 10 + '0' && input[2] == '\0')) {
+									//이건 숫자가 두 자리일 때 
+									printf("틀렸습미다! 숫자 %d 을 정확히 입력해야 했어요\n", number);
+									pnp = 0;
+									Sleep(400);
+									break;
+								}
+							}
+						}
+					}
+				}
+				number++;
+			}
+
+			if (pnp == 1 && number > 30) {
+				printf("\n축하합니다! 3,6,9 게임에 성공했습니다!\n");
+				feel++;
+				if (feel > 3) feel = 3;
+				cp += 100;
+				Sleep(200);
+				printf("기분 +1, CP +100 획득! 현재 기분: %d, CP: %d\n", feel, cp);
+			}
+			else {
+				printf("\n아쉽네요! 3,6,9 게임 실패... \n");
+				if (feel > 0) feel--;
+				cp = 0;
+				printf("기분이 나빠졌습니다. 현재 기분: %d, 보유 CP는 모두 압수냥 (CP: %d)\n", feel, cp);
+			}
+			Sleep(1500);
+		}
+		//이후 turn_count는 루프 마지막에서 ++ 해줘야 함
+		turn_count++;
 		//상태출력 이후에는 -> 기분 나빠짐.
 		//기분 나빠짐
+		feel_so_bad_or_good = 6 - intimacy; //여기서 매번 다시 계산 아니면 계속 4로 나와버림 
 		dice = rand() % 6 + 1;
-		printf("6 - %d: 주사위의 눈이 6-%d이하이면 그냥 기분이 나빠집니다.\n", intimacy, intimacy);  //이 부분은 새로운 변수를 하나 만들 예정!
-		printf("주사위를 굴립니다. 또르르...\n%d이(가) 나왔습니다.\n", dice);
-		if (dice <= (6 - intimacy)) {
+		printf("주사위의 눈이 %d이하이면 그냥 기분이 나빠집니다. (6 - %d)\n", feel_so_bad_or_good, intimacy);  //이 부분은 새로운 변수를 하나 만들 예정!
+		printf("주사위를 굴립니다. 또르르...\n");
+		Sleep(500);
+		printf("% d이(가) 나왔습니다.\n", dice);
+		Sleep(500);
+		if (dice <= (feel_so_bad_or_good)) {
 			if (feel > 0) {
 				feel--;
 				printf("%s의 기분이 나빠집니다: %d -> %d\n", name, feel + 1, feel);
+				Sleep(500);
 			}
 			else {
 				printf("%s의 기분은 이미 최악입니다.\n", name);
+				Sleep(500);
 			}
 		}
 		else {
 			printf("다행히 기분이 유지됩니다.\n");
+			Sleep(500);
 		}
 
 		Sleep(1000);
@@ -104,12 +215,14 @@ int main(void) {
 			if (zzontteok_pos > HME_POS) {
 				zzontteok_pos--;
 				printf("기분이 매우 나쁜 %s은(는) 집으로 향합니다.\n", name);
+				Sleep(500);
 				printf("기분은 나쁘지만 다리가 짧아서 한 칸 밖에 이동하지 못합니다.\n");
-
+				Sleep(500);
 				if (zzontteok_pos == HME_POS) kicked_off_shoes = 1;
 			}  //현재 위 코드는 집에 막 도착한 턴에도 바로 기분 + 1 을 하는 문제점이 있음. //! 플래그 ! 변수 하나를 추가해서 해결했음
 			else {
 				printf("%s은(는) 집에서 쉼니다.\n", name);
+				Sleep(500);
 				if (kicked_off_shoes) {
 					printf("%s은(는) 이번 턴에 막 집에 도착했습니다. 아직 쉬지 않습니다.\n", name);
 					kicked_off_shoes = 0; // 다음 턴부터는 쉴 수 있도록 플래그 변수 초기화
@@ -118,6 +231,7 @@ int main(void) {
 					printf("기분이 조금 나아졌습니다: %d -> %d\n", feel, feel + 1);
 					feel++;         //기분이 0이면 무조건 집으로 감. 도착 후엔 기분+1 회복!
 				}
+				Sleep(500);
 			}
 		}
 
@@ -135,31 +249,38 @@ int main(void) {
 
 
 				printf("%s은(는) 심심해서 %s 쪽으로 한 칸 이동합니다.\n", name,
+
 					close == scratcher_pos ? "스크래처" : "캣타워");
+				Sleep(500);
 			}
 			else {
 				printf("놀거리가 없어서 %s의 기분이 매우 나빠집니다.\n", name);
 				if (feel > 0) feel--;
+				Sleep(500);
 			}
 		}
 		//기분이 2 일 때 제자리에 대기
 		else if (feel == 2) {
-			printf("%s은(는) 기분 좋게 식빵을 굽고 있습니다.\n", name);
+			printf("\n%s은(는) 기분 좋게 식빵을 굽고 있습니다.\n", name);
+			Sleep(500);
+
 		}
 		//기분 3 일 때 냄비쪽으로 이동
 		else if (feel == 3) {
 			if (zzontteok_pos < BWL_POS) {
 				zzontteok_pos++;
-			printf("%s은(는) 골골송을 부르며 수프를 만들러 한 칸 이동합니데이.\n", name);
-		}
-		else {
-			printf("%s은(는) 수프를 만들 준비가 되어 있습니다~!\n", name);
-		}
-	}		//냄비 쪽으로 무조건 이동 → 도착 시 수프 만들기 가능
+				printf("%s은(는) 골골송을 부르며 수프를 만들러 한 칸 이동합니데이.\n", name);
+				Sleep(500);
+			}
+			else {
+				printf("%s은(는) 수프를 만들 준비가 되어 있습니다~!\n", name);
+				Sleep(500);
+			}
+		}		//냄비 쪽으로 무조건 이동 → 도착 시 수프 만들기 가능
 
-		//행동
-		//아래 코드는 야옹이 Lv1에서 사용한 코드
-		//수프 만드는 코드
+			//행동
+			//아래 코드는 야옹이 Lv1에서 사용한 코드
+			//수프 만드는 코드
 		if (zzontteok_pos == BWL_POS) {
 			int soup_type = rand() % 3;
 			if (soup_type == 0) {
@@ -178,7 +299,7 @@ int main(void) {
 			//일단 흐름상... 수프를 만든 직후에 CP가 생성되는 게 좋을 거 같아서 넣음. 
 			//기분이 좋으면 수프를 만들러 가니까 수프를 만들면 CP 포인트를 생성 
 			//cute point 보다는 cooking point 느낌. . . . .  ^^7 
-			
+
 			//2-7 CP 생산 
 
 			int cp_get = feel + intimacy; //CP 계산식: 기분 + 친밀도
@@ -202,6 +323,7 @@ int main(void) {
 				printf("%s은(는) 스크래처를 긁고 놀았습니다.\n", name);
 				printf("기분이 조금 좋아졌습니다: %d -> %d\n", feel, feel + 1);    //스크래처는 3을 넘을 일이 없으니까 feel 에 +1 만 해줘도 됨
 				feel++;           //집에서 한 턴을 쉴 때마다 기분 + 1
+				Sleep(500);
 			}
 		}
 		else if (zzontteok_pos == tower_pos && tower) {
@@ -211,6 +333,7 @@ int main(void) {
 				if (feel > 3) feel = 3;
 				printf("%s은(는) 캣타워를 뛰어다닙니다.\n", name);
 				printf("기분이 제법 좋아졌습니다: %d -> %d\n", before, feel);
+				Sleep(500);
 				//스크래처와는 다르게 캣타워는 기분이 2일 때 feel += 2 → 4가 되는데 
 				//하지만 기분은 최대 3까지니까 feel = 3; 으로 아에 못 박은 것 
 				//그리고 스크래처처럼 feel + 2 를 하면 최대 3까진데 4가 나와버림 그러면 feel = 3으로 만들어야하고 이렇게 출력하면 
@@ -219,7 +342,6 @@ int main(void) {
 			}
 		}
 		Sleep(1500);
-		system("cls");
 
 		//방 그리기 
 
@@ -244,7 +366,6 @@ int main(void) {
 		printf("\n\n");
 
 		Sleep(1500);
-		system("cls");
 
 		//현재 코드를 실행해도 상호작용 입력에서 장난감을 사지 않았을 경우의 코드까지 나오고 있음
 		//mouse 와 laser 가 매턴 1로 초기화되도록 해서 게임 시작하자마자 장난감 있는 것처럼 나오고, 실제로는 안 샀어도 쓸 수 있는 오류 생긴것.
@@ -289,23 +410,30 @@ int main(void) {
 		//선택 출력만! (효과는 다음 단계에서) 
 		switch (interaction) {
 		case 0:
-			printf("아무것도 하지 않았습니다.\n");
+			printf("\n아무것도 하지 않았습니다.\n");
+			Sleep(600);
 			break;
 		case 1:
-			printf("야옹이를 긁어 주었습니다.\n");
+			printf("\n%s(이)의 턱을 긁어 주었습니다.\n", name);
+			Sleep(600);
 			break;
 		case 2:
 			if (mouse && laser) {
 				printf("장난감 쥐와 레이저 포인터 중 하나를 선택하세요.\n");
 			}
 			else if (mouse) {
-				printf("장난감 쥐로 야옹이와 놀아 주었습니다.\n");
+				printf("\n장난감 쥐로 야옹이와 놀아 주었습니다.\n");
+				Sleep(600);
 			}
 			else if (laser) {
-				printf("레이저 포인터로 야옹이와 놀아 주었습니다.\n"); break;
+				printf("\n레이저 포인터로 야옹이와 놀아 주었습니다.\n");
+				Sleep(600);
+				break;
 			}
 		case 3:
-			printf("레이저 포인터로 야옹이와 놀아 주었습니다.\n"); break;
+			printf("\n레이저 포인터로 야옹이와 놀아 주었습니다.\n");
+			Sleep(600);
+			break;
 		}
 
 		//상호작용 처리에서 주사위가 몇 이상일 때 이하일 때의 코드들도 존재해야함.. 이 부분을 놓쳤으면 큰일날뻔
@@ -330,7 +458,7 @@ int main(void) {
 			break;
 
 		case 1: // 긁어주기
-			printf("%s의 기분은 그대로입니다: %d\n", name, feel);
+			printf("%s(이)의 기분은 그대로입니다: %d\n", name, feel);
 			if (dice >= 5) {   //주사위가 5 이상이면 +1 이니까 
 				printf("주사위: %d → 집사와의 관계가 좋아집니다: %d -> %d\n", dice, intimacy, intimacy + 1);
 				intimacy++;
@@ -397,7 +525,7 @@ int main(void) {
 
 		//이미 구매한 물건은 (품절) 표시를 해야함 먼저. 
 		if (!mouse) {      //mouse 가 0이면 참이고, 즉 아직 장난감 쥐를 안 샀는지 확인하는 조건문 !mouse 는 mouse == 0과 같음 
-			               //가독성 향상을 위해 제가 직접 mouse == 0 를 !mouse 바꿔서 사용크하하
+			//가독성 향상을 위해 제가 직접 mouse == 0 를 !mouse 바꿔서 사용크하하
 			printf("1. 장난감 쥐: 1 CP\n");
 		}
 		else {
@@ -431,7 +559,7 @@ int main(void) {
 			if (shop_flex < 0 || shop_flex > 4) {
 				printf("잘못된 입력입니다. 다시 입력하세요.\n");
 			}
-		} while (shop_flex < 0 || shop_flex > 4); 
+		} while (shop_flex < 0 || shop_flex > 4);
 
 		switch (shop_flex) {
 		case 0:
@@ -507,6 +635,9 @@ int main(void) {
 			}
 			break;
 		}
+		Sleep(1500);
+		system("cls");
+
 	}
 	return 0;
-}  
+}
